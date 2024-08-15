@@ -2,6 +2,8 @@ import os
 import subprocess
 import discord
 import openai
+from discord import app_commands
+from discord.ext import commands
 
 # Cài đặt thư viện cần thiết nếu chưa được cài đặt
 def install(package):
@@ -18,32 +20,40 @@ OPENAI_API_KEY = ''
 intents = discord.Intents.default()
 intents.message_content = True  # Kích hoạt quyền truy cập nội dung tin nhắn
 
-# Thiết lập client cho Discord và OpenAI
-client = discord.Client(intents=intents)
+# Thiết lập bot
+bot = commands.Bot(command_prefix="/", intents=intents)
+
+# Khởi tạo OpenAI API key
 openai.api_key = OPENAI_API_KEY
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print(f'We have logged in as {bot.user}')
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} commands")
+    except Exception as e:
+        print(e)
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if message.content.startswith('!chatgpt'):
-        user_input = message.content[len('!chatgpt '):]
-
-        # Gửi yêu cầu đến ChatGPT-4
-        response = openai.Completion.create(
-            model="gpt-4",
-            prompt=user_input,
-            max_tokens=150
+@bot.tree.command(name="chatgpt")
+async def chatgpt(interaction: discord.Interaction, *, prompt: str):
+    """Gửi yêu cầu đến ChatGPT và nhận phản hồi"""
+    try:
+        # Gửi yêu cầu đến ChatGPT-3.5 Turbo
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        response_text = response.choices[0].text.strip()
+        response_text = response.choices[0].message['content'].strip()
 
         # Trả lời trong Discord
-        await message.channel.send(response_text)
+        await interaction.response.send_message(response_text)
+
+    except Exception as e:
+        await interaction.response.send_message(f"Đã xảy ra lỗi: {str(e)}", ephemeral=True)
 
 # Chạy bot
-client.run(DISCORD_TOKEN)
+bot.run(DISCORD_TOKEN)
