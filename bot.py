@@ -4,12 +4,26 @@ import discord
 import openai
 from discord.ext import commands
 
-# Cài đặt thư viện cần thiết nếu chưa được cài đặt
+# Hạ cấp thư viện OpenAI xuống phiên bản 0.27.0 nếu cần
 def install(package):
     subprocess.check_call([os.sys.executable, "-m", "pip", "install", package])
 
-install('discord.py')
-install('openai')
+# Kiểm tra và cài đặt đúng phiên bản openai
+def check_and_install_openai():
+    try:
+        import openai
+        version = openai.__version__
+        if version != '0.27.0':
+            print(f"Hạ cấp openai từ phiên bản {version} xuống 0.27.0")
+            install('openai==0.27.0')
+            # Reload lại thư viện sau khi cài đặt phiên bản mới
+            import importlib
+            importlib.reload(openai)
+    except ImportError:
+        install('openai==0.27.0')
+
+# Gọi hàm kiểm tra và cài đặt openai
+check_and_install_openai()
 
 # Đặt Token của bot và API Key của OpenAI
 DISCORD_TOKEN = 'M TI3MjE2NDAyMTM0ODMzOTgzNA.GhgNuX.mbPt-vMaayNVmBP6HKU3y4hSMMEoWlHzO-38_E'
@@ -35,14 +49,12 @@ async def chatgpt(ctx, *, prompt: str):
     """Gửi yêu cầu đến ChatGPT và nhận phản hồi"""
     try:
         # Gửi yêu cầu đến ChatGPT-3.5 Turbo
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt}
-            ]
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=prompt,
+            max_tokens=150
         )
-        response_text = response.choices[0].message['content'].strip()
+        response_text = response['choices'][0]['text'].strip()
 
         # Trả lời trong Discord
         await ctx.send(response_text)
