@@ -1,8 +1,36 @@
 import os
 import subprocess
+import json
 import discord
 import openai
 from discord.ext import commands
+
+# Đường dẫn đến file JSON chứa token và API key
+config_file = 'config.json'
+
+# Hàm để kiểm tra và tạo file JSON nếu chưa tồn tại
+def check_and_create_config():
+    if not os.path.exists(config_file):
+        print(f"File {config_file} không tồn tại. Đang tạo file...")
+        default_config = {
+            "DISCORD_TOKEN": "YOUR_DISCORD_BOT_TOKEN",
+            "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY"
+        }
+        with open(config_file, 'w') as f:
+            json.dump(default_config, f, indent=4)
+        print(f"Đã tạo file {config_file}. Hãy điền token và API key rồi chạy lại chương trình.")
+        exit()
+
+# Hàm để tải cấu hình từ file JSON
+def load_config():
+    with open(config_file, 'r') as f:
+        return json.load(f)
+
+# Kiểm tra và tạo file config nếu cần
+check_and_create_config()
+
+# Tải cấu hình từ file JSON
+config = load_config()
 
 # Hạ cấp thư viện OpenAI xuống phiên bản 0.27.0 nếu cần
 def install(package):
@@ -25,9 +53,9 @@ def check_and_install_openai():
 # Gọi hàm kiểm tra và cài đặt openai
 check_and_install_openai()
 
-# Đặt Token của bot và API Key của OpenAI
-DISCORD_TOKEN = 'M TI3MjE2NDAyMTM0ODMzOTgzNA.GhgNuX.mbPt-vMaayNVmBP6HKU3y4hSMMEoWlHzO-38_E'
-OPENAI_API_KEY = 's k-proj-juh_r2jUPSnLQ1i6zZQSKDlHl3argRxQYFrWbVqWKG4iBOvOxIARuvTUc4T3BlbkFJRmDQerb7YnCEcPe6SEte9NSTZZJW58wZFdQ9kubH-ADvCgE-dknFi3xeUA'
+# Đặt Token của bot và API Key của OpenAI từ file JSON
+DISCORD_TOKEN = config['DISCORD_TOKEN']
+OPENAI_API_KEY = config['OPENAI_API_KEY']
 
 # Thiết lập intents cho bot
 intents = discord.Intents.default()
