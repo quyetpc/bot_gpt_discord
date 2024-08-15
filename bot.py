@@ -13,14 +13,14 @@ install('discord.py')
 install('openai')
 
 # Đặt Token của bot và API Key của OpenAI
-DISCORD_TOKEN = ''
-OPENAI_API_KEY = ''
+DISCORD_TOKEN = 'MTI3MjE2NDAyMTM0ODMzOTgzNA.GhgNuX.mbPt -vMaayNVmBP6HKU3y4hSMMEoWlHzO-38_E'
+OPENAI_API_KEY = 'sk-proj-juh_ r2jUPSnLQ1i6zZQSKDlHl3argRxQYFrWbVqWKG4iBOvOxIARuvTUc4T3BlbkFJRmDQerb7YnCEcPe6SEte9NSTZZJW58wZFdQ9kubH-ADvCgE-dknFi3xeUA'
 
 # Thiết lập intents cho bot
 intents = discord.Intents.default()
 intents.message_content = True  # Kích hoạt quyền truy cập nội dung tin nhắn
 
-# Thiết lập bot
+# Thiết lập bot với command prefix là "/"
 bot = commands.Bot(command_prefix="/", intents=intents)
 
 # Khởi tạo OpenAI API key
@@ -30,13 +30,15 @@ openai.api_key = OPENAI_API_KEY
 async def on_ready():
     print(f'We have logged in as {bot.user}')
     try:
+        # Đồng bộ các lệnh slash với server Discord
         synced = await bot.tree.sync()
         print(f"Synced {len(synced)} commands")
     except Exception as e:
-        print(e)
+        print(f"Error syncing commands: {e}")
 
-@bot.tree.command(name="chatgpt")
-async def chatgpt(interaction: discord.Interaction, *, prompt: str):
+# Đăng ký lệnh slash /chatgpt
+@bot.tree.command(name="chatgpt", description="Gửi yêu cầu đến ChatGPT")
+async def chatgpt(interaction: discord.Interaction, prompt: str):
     """Gửi yêu cầu đến ChatGPT và nhận phản hồi"""
     try:
         # Gửi yêu cầu đến ChatGPT-3.5 Turbo
