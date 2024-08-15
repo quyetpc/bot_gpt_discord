@@ -1,3 +1,13 @@
+import os
+import subprocess
+
+# Cài đặt thư viện cần thiết nếu chưa được cài đặt
+def install(package):
+    subprocess.check_call([os.sys.executable, "-m", "pip", "install", package])
+
+install('discord.py')
+install('openai')
+
 import discord
 import openai
 
